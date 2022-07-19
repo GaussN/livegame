@@ -15,70 +15,20 @@
 
 
 struct Size { int w, h; };
-
-
 struct Coord { int x, y; };
 
 
-void gotoxy(int x, int y)
-{
-    COORD position;
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    position.X = x;
-    position.Y = y;
-    SetConsoleCursorPosition(hConsole, position);
-}
-
-
-void print(bool** field, Size field_size) {
-    gotoxy(1, 1);
-    for (int i = 1; i < field_size.h - 1; i++) {
-        for (int j = 1; j < field_size.w - 1; j++) {
-            std::cout << (field[i][j] ? ALIVE_CELL : DEAD_CELL);
-        }
-        gotoxy(1, i+1);
-    }
-}
-
-
-int count_nighbor(bool** field, Coord cell_coord, Size field_size) throw(std::out_of_range) {
-    if (cell_coord.x < 1 || cell_coord.x > field_size.w - 1)
-        throw std::out_of_range("x=" + cell_coord.x);
-    if (cell_coord.y < 1 || cell_coord.y > field_size.h - 1)
-        throw std::out_of_range("y=" + cell_coord.y);;
-
-    int count = 0;
-    
-    //пиздец
-    if (field[cell_coord.y + 1][cell_coord.x-1])
-        count++;
-    if (field[cell_coord.y + 1][cell_coord.x])
-        count++;
-    if (field[cell_coord.y + 1][cell_coord.x+1])
-        count++;
-
-
-    if (field[cell_coord.y][cell_coord.x - 1])
-        count++;
-    if (field[cell_coord.y][cell_coord.x + 1])
-        count++;
-
-    if (field[cell_coord.y - 1][cell_coord.x - 1])
-        count++;
-    if (field[cell_coord.y - 1][cell_coord.x])
-        count++;
-    if (field[cell_coord.y - 1][cell_coord.x + 1])
-        count++;
-
-    return count;
-}
+void gotoxy(int x, int y);
+void print(bool** field, Size field_size);
+int count_nighbor(bool** field, Coord cell_coord, Size field_size) throw(std::out_of_range);
 
 
 int main()
 {
     bool** field;//Russian field of experiments
-    bool** field_b;
+    bool** field_b;//бефер 
     Size size;
+
 
     //ввод размеров поля
     while (true) {
@@ -91,6 +41,7 @@ int main()
     }
     std::cin.ignore(32767, '\n');
 
+
     while (true) {
         std::cout << "enter heigth: ";
         std::cin >> size.h;
@@ -101,9 +52,11 @@ int main()
     }
     std::cin.ignore(32767, '\n');
 
+
     //бортики
     size.w += 2;
     size.h += 2;
+
 
     try {
         field = new bool* [size.h];
@@ -126,12 +79,15 @@ int main()
         return EXIT_FAILURE;
     }
 
+
     system("cls | clear");
+
 
     //запонение 
     for (int i = 0; i < size.h; i++)
         for (int j = 0; j < size.w; j++)
             field[i][j] = false;
+
 
     //draw frame
     std::cout << "+";
@@ -151,6 +107,7 @@ int main()
     for (int i = 1; i < size.w - 1; i++)
         std::cout << "-";
     std::cout << "+";
+
 
     //set points
     /*
@@ -205,9 +162,9 @@ int main()
     
     start:;
 
+    //основной цикл
     while (true) {
         //перебор измененных значений клеток в буфер
-        //gotoxy(0, size.w+1);
         for (int i = 1; i < size.h-1; i++) {
             for (int j = 1; j < size.w-1; j++) {
                 field_b[i][j] = false;
@@ -237,12 +194,69 @@ int main()
     }
     
 
-
-            
     for (int i = 0; i < size.h; i++) {
         delete[] field[i];
     }
     delete[] field;
 
+
     return EXIT_SUCCESS;
+}
+
+
+//перемещает курсор
+void gotoxy(int x, int y)
+{
+    COORD position;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    position.X = x;
+    position.Y = y;
+    SetConsoleCursorPosition(hConsole, position);
+}
+
+
+//вывод поля
+void print(bool** field, Size field_size) {
+    gotoxy(1, 1);
+    for (int i = 1; i < field_size.h - 1; i++) {
+        for (int j = 1; j < field_size.w - 1; j++) {
+            std::cout << (field[i][j] ? ALIVE_CELL : DEAD_CELL);
+        }
+        gotoxy(1, i + 1);
+    }
+}
+
+
+//считает количество соседних живых клеток
+int count_nighbor(bool** field, Coord cell_coord, Size field_size) throw(std::out_of_range) {
+    //проверка диапазона 
+    if (cell_coord.x < 1 || cell_coord.x > field_size.w - 1)
+        throw std::out_of_range("x=" + cell_coord.x);
+    if (cell_coord.y < 1 || cell_coord.y > field_size.h - 1)
+        throw std::out_of_range("y=" + cell_coord.y);;
+
+    int count = 0;
+
+    //хочется плакать 
+    if (field[cell_coord.y + 1][cell_coord.x - 1])
+        count++;
+    if (field[cell_coord.y + 1][cell_coord.x])
+        count++;
+    if (field[cell_coord.y + 1][cell_coord.x + 1])
+        count++;
+
+
+    if (field[cell_coord.y][cell_coord.x - 1])
+        count++;
+    if (field[cell_coord.y][cell_coord.x + 1])
+        count++;
+
+    if (field[cell_coord.y - 1][cell_coord.x - 1])
+        count++;
+    if (field[cell_coord.y - 1][cell_coord.x])
+        count++;
+    if (field[cell_coord.y - 1][cell_coord.x + 1])
+        count++;
+
+    return count;
 }
