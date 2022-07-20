@@ -6,7 +6,7 @@
 #define ALIVE_CELL "*"
 #define DEAD_CELL " "
 
-#define MOVE_SPEED 300
+#define MOVE_SPEED 200
 
 #define VK_RIGHT 77
 #define VK_LEFT 75
@@ -57,7 +57,6 @@ int main()
     }
     std::cin.ignore(32767, '\n');
 
-
     while (true) {
         std::cout << "enter heigth: ";
         std::cin >> size.h;
@@ -79,11 +78,6 @@ int main()
         std::cin.ignore(32767, '\n');
     }
     std::cin.ignore(32767, '\n');
-
-
-    //бортики
-    //size.w += 2;
-    //size.h += 2;
 
 
     try {
@@ -168,7 +162,7 @@ int main()
             else 
                 coords.y++;
             break;
-        case VK_RETURN:
+        case VK_SPACE:
             if (field[coords.y][coords.x]) {
                 std::cout << DEAD_CELL;
                 field[coords.y][coords.x] = false;
@@ -177,7 +171,7 @@ int main()
             std::cout << ALIVE_CELL;
             field[coords.y][coords.x] = true;
             break;
-        case VK_ESCAPE:
+        case VK_RETURN:
             goto start;
             break;
         default:
@@ -188,8 +182,22 @@ int main()
     
     start:;
 
+
+    //hide cursor
+    CONSOLE_CURSOR_INFO cursor_info;
+    GetConsoleCursorInfo(console, &cursor_info);
+    cursor_info.bVisible = false;
+    SetConsoleCursorInfo(console, &cursor_info);
+
+
     //основной цикл
     while (true) {
+        //выход
+        if (kbhit()) {
+            char pressed_key = _getch();
+            if (pressed_key == (int)'q')
+                break;
+        }
         //перебор измененных значений клеток в буфер
         for (int i = 0; i < size.h; i++) {
             for (int j = 0; j < size.w; j++) {
@@ -207,7 +215,6 @@ int main()
             }
         }
 
-
         //copy field_b -> field
         for (int i = 0; i < size.h; i++) {
             for (int j = 0; j < size.w; j++) {
@@ -219,6 +226,8 @@ int main()
         Sleep(MOVE_SPEED);
     }
     
+    system("cls");
+    std::cout << "exit";
 
     for (int i = 0; i < size.h; i++) {
         delete[] field[i];
@@ -258,7 +267,7 @@ void print(bool** field, Size field_size) {
         for (int j = 0; j < field_size.w; j++) {
             std::cout << (field[i][j] ? ALIVE_CELL : DEAD_CELL);
         }
-        gotoxy(1, i + 1);
+        gotoxy(1, i + 2);
     }
 }
 
